@@ -1,2 +1,2 @@
 # bl531
-Beamline 5.3.1 Controls and 
+Beamline 5.3.1 Controls and User Interface upgrade
