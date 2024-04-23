@@ -120,9 +120,7 @@ class BeamStats:
     image = []
 
 
-def get_beam_stats(im, roi=None, threshold=0.2, method="rms", median_filter_size=3, gaussian_filter_sigma=2):
-
-
+def get_beam_stats(im, roi=None, threshold=0.2, method="rms", median_filter_size=3, gaussian_filter_sigma=2, downsample=1):
 
     if roi:
         imin, imax, jmin, jmax = roi
@@ -130,6 +128,13 @@ def get_beam_stats(im, roi=None, threshold=0.2, method="rms", median_filter_size
         cim = im[jmin:jmax, imin:imax]
     else:
         cim = im
+
+    print(cim.shape)
+
+    if downsample > 1:
+        cim = cim[::downsample, ::downsample]
+
+    
 
     cfim = sp.ndimage.median_filter(cim, size=median_filter_size)
     cfim = sp.ndimage.gaussian_filter(cfim, sigma=gaussian_filter_sigma)
@@ -163,7 +168,6 @@ def get_beam_stats(im, roi=None, threshold=0.2, method="rms", median_filter_size
             normed_cumsum = np.cumsum(profile) / np.sum(profile)
             lower, center, upper = np.interp([0.05, 0.5, 0.95], normed_cumsum, index)
             width = upper - lower
-
         else:
             raise ValueError(f"Invalid method '{method}'.")
 
@@ -171,8 +175,9 @@ def get_beam_stats(im, roi=None, threshold=0.2, method="rms", median_filter_size
         stats[f"width_{axis}"] = width
 
 
+    stats["area"] = (cfim > cfim.max() * threshold).sum()
 
-    stats["eff_area"] = np.sqrt(stats["width_x"]**2 + stats["width_y"]**2)
+    stats["eff_area"] = 0.5 * (stats["width_x"]**2 + stats["width_y"]**2)
 
     # bs = BeamStats(**stats)
 
@@ -221,11 +226,11 @@ def basler_cam_digestion(db, uid):
         bad = False
 
         roi = [500, 1000, 150, 600]
-        #roi = None
+        roi = None
 
-        stats = get_beam_stats(entry.basler_cam_image, roi=roi, method="rms", threshold=0.25)
+        stats = get_beam_stats(entry.basler_cam_image, roi=[4000, 5400, 1500, 2500], method="rms", downsample=2, threshold=0.25)
 
-        for attr in ["center_x", "width_x", "center_y", "width_y", "eff_area", "sum", "max"]:
+        for attr in ["center_x", "width_x", "center_y", "width_y", "eff_area", "area", "sum", "max"]:
             products.loc[index,f"beam_{attr}"] = stats[attr] if not bad else np.nan
 
     return products

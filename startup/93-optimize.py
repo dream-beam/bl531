@@ -15,7 +15,7 @@ dofs = [
     DOF(device=mono_height, description="monochromator height", search_domain=(40, 42), units="mm", tags=["mono"]),
 ]
 
-# objectives = [
+# diode_objectives = [
 #     Objective(description="flux", name="diode_sample", target=-1500, min_snr=5e0),
 # ]
 
@@ -29,7 +29,8 @@ basler_objectives = [
     Objective(description="beam sum", name="beam_sum", target="max", transform="log", max_noise=0.1, units="daq"),
     #Objective(description="beam width", name="beam_width_x", target="min", transform="log", max_noise=0.1, units="pixels"),
     #Objective(description="beam height", name="beam_width_y", target="min", transform="log", max_noise=0.1, units="pixels"),
-    Objective(description="effective area", name="beam_eff_area", target="min", transform="log", weight=2, max_noise=0.1, units="pixels"),
+    #Objective(description="effective area", name="beam_eff_area", target="min", transform="log", weight=2, max_noise=0.1, units="pixels"),
+    Objective(description="area", name="beam_area", target="min", transform="log", trust_domain=(10, 10000), max_noise=0.1, units="pixels"),
 ]
 
 

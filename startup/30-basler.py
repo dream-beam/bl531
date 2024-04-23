@@ -22,10 +22,10 @@ if use_basler_cam:
     ophyd_basler.available_devices()
 
     #cam num sets the camera we use 
-    basler_cam = BaslerCamera(cam_num=1, verbose=True, name="basler_cam", pixel_format="BayerGB12")
-    basler_cam.exposure_time.put(20)
+    basler_cam = BaslerCamera(cam_num=1, verbose=True, name="basler_cam", pixel_format="Mono12")
+    basler_cam.exposure_time.put(25)
 
-    basler_cam.active_format.put("BayerGB12")
+    # basler_cam.active_format.put("BayerGB12")
 
     db.reg.register_handler("BASLER_CAM_HDF5", BaslerCamHDF5Handler, overwrite=True)
 
