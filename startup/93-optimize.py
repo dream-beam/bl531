@@ -15,9 +15,9 @@ dofs = [
     DOF(device=mono_height, description="monochromator height", search_domain=(40, 42), units="mm", tags=["mono"]),
 ]
 
-# diode_objectives = [
-#     Objective(description="flux", name="diode_sample", target=-1500, min_snr=5e0),
-# ]
+beamstop_objectives = [
+    Objective(description="flux", name="beamstop_current", target=(-5, -4)),
+]
 
 ice_cream_objectives = [
     Objective(description="beam flux", name="ice_cream_pix_sum", target="max", trust_domain = (10000, np.inf), transform="log", max_noise=0.1, units="pA"),
@@ -34,45 +34,54 @@ basler_objectives = [
 ]
 
 
-dets=[
-    # ice_cream
-    basler_cam,
-    ]
+# agent = Agent(
+#                 dofs=dofs,
+#                 objectives=basler_objectives,
+#                 #dets=[basler_cam],
+#                 dets=[beamstop_current],
+#                 digestion=basler_cam_digestion,
+#                 db=db,
+#                 trigger_delay=0.1,
+#                 verbose=True
+#                 )
+
 
 agent = Agent(
-                dofs=dofs, 
-                objectives=basler_objectives, 
-                dets=[basler_cam], 
-                digestion=basler_cam_digestion,
-                db=db, 
-                trigger_delay=0.1, 
+                dofs=dofs,
+                objectives=beamstop_objectives,
+                dets=[beamstop_current],
+                db=db,
+                trigger_delay=2,
                 verbose=True
                 )
 
 
 
-exposure_dofs = [
-    DOF(device=basler_cam.exposure_time, description="exposure time", search_domain=(10, 200), units="ms")
-]
 
-exposure_objectives = [
-    Objective(description="beam max", name="beam_max", target=(3500, 4000), max_noise=0.1, units="daq"),
-]
+# exposure_dofs = [
+#     DOF(device=basler_cam.exposure_time, description="exposure time", search_domain=(10, 200), units="ms")
+# ]
+
+# exposure_objectives = [
+#     Objective(description="beam max", name="beam_max", target=(3500, 4000), max_noise=0.1, units="daq"),
+# ]
 
 
-exposure_agent = Agent(
-                dofs=exposure_dofs,
-                objectives=exposure_objectives, 
-                dets=[basler_cam], 
-                digestion=basler_cam_digestion,
-                db=db, 
-                trigger_delay=0.1, 
-                verbose=True
-                )
+# exposure_agent = Agent(
+#                 dofs=exposure_dofs,
+#                 objectives=exposure_objectives,
+#                 dets=[basler_cam],
+#                 digestion=basler_cam_digestion,
+#                 db=db,
+#                 trigger_delay=0.1,
+#                 verbose=True
+#                 )
 
 
 agent.dofs.deactivate()
-agent.dofs.activate(tag="toroid")
+# agent.dofs.activate(tag="toroid")
+
+agent.dofs.mono_angle.activate()
 
 # # author: tmorris@bnl.gov
 # # June 2023
@@ -86,11 +95,11 @@ agent.dofs.activate(tag="toroid")
 
 # # bounds = np.array([(0, 0.1), (0, 10000)])
 
-# # fid is for fiducials (set of good/ok parameters); 
+# # fid is for fiducials (set of good/ok parameters);
 # # #center of the exploration range
 # fid_params = {
-#     #"basler_cam_exposure_time": 100, 
-#     "m101_pitch": 0.04, 
+#     #"basler_cam_exposure_time": 100,
+#     "m101_pitch": 0.04,
 #     "m101_bend": 2800,
 #     "mono_height": 40.6,
 #     "mono_angle": 24,
@@ -101,7 +110,7 @@ agent.dofs.activate(tag="toroid")
 #     "m101_pitch": [-2e-2, +2e-2],
 #     "m101_bend": [-6e+2, +6e+2],
 #     "mono_height": [-1e0, 1e0],
-#     "mono_angle": [0, 6], 
+#     "mono_angle": [0, 6],
 # }
 
 # # 4 x 2 arrays: 4 is dof, 2 is for min and max
