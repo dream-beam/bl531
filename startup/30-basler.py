@@ -25,6 +25,11 @@ if use_basler_cam:
     basler_cam = BaslerCamera(cam_num=1, verbose=True, name="basler_cam", pixel_format="Mono12")
     basler_cam.exposure_time.put(25)
 
+    ip = get_ipython()
+
+    # To disable napari callback, comment out next line:
+    ip.run_line_magic("run",  "-i ~/src/ophyd-basler/examples/napari_basler.py")
+
     # basler_cam.active_format.put("BayerGB12")
 
     db.reg.register_handler("BASLER_CAM_HDF5", BaslerCamHDF5Handler, overwrite=True)
