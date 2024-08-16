@@ -7,6 +7,8 @@ import os
 
 import h5py
 import numpy as np
+print(f"Loading {__file__}")
+
 from event_model import compose_resource
 from ophyd import Component as Cpt
 from ophyd import Device, Signal
@@ -59,7 +61,7 @@ class IceCream(Device):
 
     def trigger(self):
 
-        super().trigger()
+        # super().trigger()
 
         n_frames = 4
 
@@ -68,21 +70,21 @@ class IceCream(Device):
             res = os.popen("pvget ice-cream/image").read()
             image += np.array(eval(re.compile(" (\[.+\])").findall(res)[0]), dtype=float).reshape(48, 50).T / n_frames
 
-        pix_sum, es, x0, xw, y0, yw = get_beam_stats(image, threshold=0.1)
+        # pix_sum, es, x0, xw, y0, yw = get_beam_stats(image, threshold=0.1)
 
-        bad = False
+        # bad = False
 
-        if bad:
-            pix_sum, es, x0, xw, y0, yw = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
+        # if bad:
+        #     pix_sum, es, x0, xw, y0, yw = np.nan, np.nan, np.nan, np.nan, np.nan, np.nan
 
-        ny, nx = image.shape
+        # ny, nx = image.shape
 
-        self.pix_sum.put(pix_sum)
-        self.eff_size.put(es * np.sqrt(self.height * self.width / (nx * ny)))
-        self.pos_x.put(x0 * self.width / nx)
-        self.pos_y.put(y0 * self.height / ny)
-        self.wid_x.put(xw * self.width / nx)
-        self.wid_y.put(yw * self.height / ny)
+        # self.pix_sum.put(pix_sum)
+        # self.eff_size.put(es * np.sqrt(self.height * self.width / (nx * ny)))
+        # self.pos_x.put(x0 * self.width / nx)
+        # self.pos_y.put(y0 * self.height / ny)
+        # self.wid_x.put(xw * self.width / nx)
+        # self.wid_y.put(yw * self.height / ny)
 
         self.image.put(image)
 
@@ -96,11 +98,11 @@ class IceCream(Device):
     def unstage(self):
         ...
 
-    def collect_asset_docs(self):
-        items = list(self._asset_docs_cache)
-        self._asset_docs_cache.clear()
-        for item in items:
-            yield item
+    # def collect_asset_docs(self):
+    #     items = list(self._asset_docs_cache)
+    #     self._asset_docs_cache.clear()
+    #     for item in items:
+    #         yield item
 
 
 ice_cream = IceCream(name="ice_cream", width=2.5, height=2.4)

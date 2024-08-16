@@ -1,8 +1,10 @@
 # author: tmorris@bnl.gov
 # June 2023
 # as used at ALS
+print(f"Loading {__file__}")
 
-use_basler_cam = True
+
+use_basler_cam = False
 
 if use_basler_cam:
 
@@ -22,13 +24,14 @@ if use_basler_cam:
     ophyd_basler.available_devices()
 
     #cam num sets the camera we use 
-    basler_cam = BaslerCamera(cam_num=1, verbose=True, name="basler_cam", pixel_format="Mono12")
-    basler_cam.exposure_time.put(25)
+    basler_cam = BaslerCamera(cam_num=1, verbose=True, name="basler_cam", pixel_format="Mono8")
+    basler_cam.exposure_time.put(100) # ms
+    basler_cam.grab_timeout.put(20000) # ms
 
     ip = get_ipython()
 
     # To disable napari callback, comment out next line:
-    ip.run_line_magic("run",  "-i ~/src/ophyd-basler/examples/napari_basler.py")
+    #ip.run_line_magic("run",  "-i ~/src/ophyd-basler/examples/napari_basler.py")
 
     # basler_cam.active_format.put("BayerGB12")
 

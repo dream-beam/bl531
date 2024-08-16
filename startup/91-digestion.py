@@ -185,6 +185,8 @@ def get_beam_stats(im, roi=None, threshold=0.2, method="rms", median_filter_size
 
 
 
+print(f"Loading {__file__}")
+
 import matplotlib.pyplot as plt
 
 def test_beam_digestion(image, f, **kwargs):
@@ -202,35 +204,81 @@ def test_beam_digestion(image, f, **kwargs):
 
 
 
-def exposure_digestion(db, uid):
+def exposure_digestion(df):
 
-    products = db[uid].table(fill=True)
-
-    for index, entry in products.iterrows():
+    for index, entry in df.iterrows():
 
         roi = [500, 1000, 150, 600]
         stats = get_beam_stats(entry.basler_cam_image, roi=roi, method="rms")
         p99 = np.percentile(stats["image"].astype(float).ravel(), q=99)
-        products.loc[index, f"beam_p99"] = p99
+        df.loc[index, f"beam_p99"] = p99
 
-    return products
+    return df
 
 
 
-def basler_cam_digestion(db, uid):
+def basler_cam_digestion(df):
 
-    products = db[uid].table(fill=True)
 
-    for index, entry in products.iterrows():
+    for index, entry in df.iterrows():
 
         bad = False
 
         roi = [500, 1000, 150, 600]
         roi = None
 
-        stats = get_beam_stats(entry.basler_cam_image, roi=[4000, 5400, 1500, 2500], method="rms", downsample=2, threshold=0.25)
+        #stats = get_beam_stats(entry.basler_cam_image, roi=[4000, 5400, 1500, 2500], method="rms", downsample=2, threshold=0.25)
+        stats = get_beam_stats(entry.basler_cam_image, method="rms", downsample=2, threshold=0.25)
 
         for attr in ["center_x", "width_x", "center_y", "width_y", "eff_area", "area", "sum", "max"]:
-            products.loc[index,f"beam_{attr}"] = stats[attr] if not bad else np.nan
+            df.loc[index,f"beam_{attr}"] = stats[attr] if not bad else np.nan
 
-    return products
+    return df
+
+
+def diamond_cam_digestion(df):
+
+
+    for index, entry in df.iterrows():
+
+        bad = False
+
+        roi = [500, 1000, 150, 600]
+        roi = None
+
+        #stats = get_beam_stats(entry.basler_cam_image, roi=[4000, 5400, 1500, 2500], method="rms", downsample=2, threshold=0.25)
+        stats = get_beam_stats(entry.ice_cream_image, method="rms", downsample=2, threshold=0.25)
+
+        for attr in ["center_x", "width_x", "center_y", "width_y", "eff_area", "area", "sum", "max"]:
+            df.loc[index,f"beam_{attr}"] = stats[attr] if not bad else np.nan
+
+    return df
+
+gaussian_with_slope = lambda x, offset, peak, mean, sigma: peak * np.exp(-0.5 * np.square((x-mean)/sigma)) + offset
+
+def saxs_digestion(df):
+
+    for index, entry in df.iterrows():
+
+        profile = entry.saxs_profile[90:120]
+
+        x = np.arange(len(profile))
+
+        # p0 = [profile.min(), profile.ptp(), 15, 5]
+        # pars, cpars = sp.optimize.curve_fit(gaussian_with_slope, , profile, p0=p0)
+
+        # offset, peak, mean, sigma = pars
+    
+
+        peak = profile.max()
+
+        x0 = np.sum(profile * x) / np.sum(profile)
+        sigma = np.sqrt(np.sum(profile * (x - x0)**2) / np.sum(profile))
+
+        df.loc[index, "saxs_offset_x"] = x0
+        # df.loc[index, "saxs_offset_y"] = mean
+        df.loc[index, "saxs_peak"] = peak
+        df.loc[index, "saxs_width"] = 2 * sigma
+
+
+    return df
